@@ -1,0 +1,693 @@
+/* =========================================================
+   Палитра и базовые переменные
+   ========================================================= */
+:root {
+  --paper: #F4EDE2;       /* основной фон */
+  --paper-deep: #EAE0CF;  /* карточки, конверт */
+  --paper-dark: #DDCFB8;  /* клапан конверта — чуть темнее корпуса */
+  --ink: #2E2A26;         /* текст */
+  --ink-soft: #7A6F62;    /* подписи, годы */
+  --seal: #9B3B2F;        /* сургуч, акценты */
+  --gold: #C4A05A;        /* тонкие линии, детали */
+
+  --font-title: "Cormorant Garamond", Georgia, serif;
+  --font-text: "Onest", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-hand: "Caveat", "Comic Sans MS", cursive;
+
+  --ease-soft: cubic-bezier(.4, 0, .2, 1);
+  --shadow-soft: 0 1px 2px rgba(46, 42, 38, .06), 0 10px 30px -12px rgba(46, 42, 38, .25);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100svh;
+  background-color: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-text);
+  font-size: 18px;
+  line-height: 1.8;
+  overflow-x: hidden;          /* страховка от горизонтального скролла */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Пока конверт закрыт — страницу не прокручиваем */
+body.is-locked {
+  overflow: hidden;
+}
+
+/* Бумажная текстура: шум feTurbulence в data-URI, поверх фона, под контентом */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: .04;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 240px 240px;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+/* =========================================================
+   ЭКРАН 1: КОНВЕРТ
+   ========================================================= */
+.envelope-screen {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  padding: 24px 16px;
+  overflow: hidden;
+  transition: opacity .4s ease;
+}
+
+.envelope-screen.is-faded {
+  opacity: 0;
+}
+
+/* Обёртка отвечает только за «дыхание» конверта */
+.envelope-float {
+  animation: envelope-float 4s ease-in-out infinite;
+}
+
+.envelope-screen.is-opening .envelope-float {
+  animation-play-state: paused;
+}
+
+@keyframes envelope-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+
+.envelope {
+  position: relative;
+  display: block;
+  width: min(86vw, 360px);
+  aspect-ratio: 3 / 2;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.envelope:focus-visible {
+  outline: 2px dashed var(--gold);
+  outline-offset: 10px;
+  border-radius: 6px;
+}
+
+/* Общее для частей конверта, которые уезжают вниз */
+.envelope__back,
+.envelope__pocket,
+.envelope__flap,
+.envelope__seal {
+  transition:
+    translate .5s var(--ease-soft),
+    opacity .5s var(--ease-soft);
+}
+
+/* Задняя стенка */
+.envelope__back {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: 4px;
+  background: var(--paper-deep);
+  box-shadow: var(--shadow-soft);
+}
+
+/* Письмо внутри конверта */
+.envelope__sheet {
+  position: absolute;
+  left: 7%;
+  right: 7%;
+  top: 6%;
+  bottom: 8%;
+  z-index: 1;
+  border-radius: 2px;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0 18px,
+      rgba(196, 160, 90, .22) 18px 19px
+    ) 0 28px / 100% calc(100% - 44px) no-repeat,
+    #FFFDF8;
+  border: 1px solid rgba(196, 160, 90, .5);
+  box-shadow: 0 2px 6px rgba(46, 42, 38, .08);
+  transition:
+    translate .5s var(--ease-soft),
+    opacity .5s var(--ease-soft);
+}
+
+/* Передний «карман» — всё, кроме верхнего треугольника */
+.envelope__pocket {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: 4px;
+  background:
+    linear-gradient(to top right, transparent 49.6%, rgba(46, 42, 38, .06) 50%, transparent 50.6%),
+    linear-gradient(to top left, transparent 49.6%, rgba(46, 42, 38, .06) 50%, transparent 50.6%),
+    var(--paper-deep);
+  clip-path: polygon(0 0, 50% 56%, 100% 0, 100% 100%, 0 100%);
+}
+
+/* Клапан */
+.envelope__flap {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 60%;
+  z-index: 3;
+  background: linear-gradient(to bottom, var(--paper-dark), #D6C7AE);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  border-radius: 4px 4px 0 0;
+  transform-origin: top center;
+  transform: perspective(900px) rotateX(0deg);
+  transition:
+    transform .8s var(--ease-soft),
+    translate .5s var(--ease-soft),
+    opacity .5s var(--ease-soft);
+}
+
+/* Сургучная печать */
+.envelope__seal {
+  position: absolute;
+  left: 50%;
+  top: 60%;
+  z-index: 4;
+  width: 64px;
+  height: 64px;
+  margin: -40px 0 0 -32px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 30%, rgba(255, 255, 255, .22), transparent 45%),
+    radial-gradient(circle, var(--seal) 58%, #86301F 59%, var(--seal) 64%, #7C2C22 100%);
+  box-shadow:
+    inset 0 0 0 5px rgba(0, 0, 0, .08),
+    inset 0 3px 6px rgba(255, 255, 255, .18),
+    inset 0 -4px 8px rgba(0, 0, 0, .3),
+    0 3px 6px rgba(46, 42, 38, .3);
+}
+
+/* Выдавленное кольцо в центре печати — без надписей */
+.envelope__seal::after {
+  content: "";
+  position: absolute;
+  inset: 18px;
+  border-radius: 50%;
+  box-shadow:
+    inset 0 2px 3px rgba(0, 0, 0, .35),
+    0 1px 0 rgba(255, 255, 255, .18);
+}
+
+.envelope-hint {
+  margin: 0;
+  font-family: var(--font-hand);
+  font-weight: 600;
+  font-size: 26px;
+  line-height: 1.2;
+  color: var(--ink-soft);
+  animation: hint-pulse 2.4s ease-in-out infinite;
+  transition: opacity .3s ease;
+}
+
+@keyframes hint-pulse {
+  0%, 100% { opacity: .5; }
+  50%      { opacity: 1; }
+}
+
+/* --- Фазы открытия --- */
+
+/* 1. Клапан отгибается, печать и подсказка гаснут */
+.envelope-screen.is-opening .envelope__flap {
+  transform: perspective(900px) rotateX(180deg);
+}
+
+.envelope-screen.is-opening .envelope__seal {
+  opacity: 0;
+  transition-duration: .3s;
+}
+
+.envelope-screen.is-opening .envelope-hint {
+  animation: none;
+  opacity: 0;
+}
+
+/* 2. Письмо выезжает вверх; клапан уходит за письмо */
+.envelope-screen.is-letter-out .envelope__flap {
+  z-index: 0;
+}
+
+.envelope-screen.is-letter-out .envelope__sheet {
+  translate: 0 -62%;
+}
+
+/* 3. Конверт уходит вниз, письмо улетает вверх к экрану письма */
+.envelope-screen.is-leaving .envelope__back,
+.envelope-screen.is-leaving .envelope__pocket,
+.envelope-screen.is-leaving .envelope__flap,
+.envelope-screen.is-leaving .envelope__seal {
+  translate: 0 60vh;
+  opacity: 0;
+}
+
+.envelope-screen.is-leaving .envelope__sheet {
+  translate: 0 -140%;
+  opacity: 0;
+}
+
+/* =========================================================
+   Альбом (всё после конверта)
+   ========================================================= */
+.album {
+  position: relative;
+  z-index: 1;
+  animation: fade-in .7s ease both;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* =========================================================
+   ЭКРАН 2: ПИСЬМО
+   ========================================================= */
+.letter-screen {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  padding: 48px 16px 32px;
+}
+
+.letter {
+  width: 100%;
+  max-width: 620px;
+  padding: 48px;
+  background: #FBF7F0;
+  border: 1px solid var(--gold);
+  border-radius: 2px;
+  box-shadow: var(--shadow-soft);
+  position: relative;
+}
+
+/* Тонкая внутренняя рамка — как на старой почтовой бумаге */
+.letter::before {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border: 1px solid rgba(196, 160, 90, .35);
+  pointer-events: none;
+}
+
+.letter__text p {
+  margin: 0 0 1.1em;
+  font-size: 18px;
+  line-height: 1.8;
+  color: var(--ink);
+  overflow-wrap: break-word;
+}
+
+.letter__text p,
+.letter__signature {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity .7s ease-out,
+    transform .7s ease-out;
+}
+
+.letter.is-visible .letter__text p,
+.letter.is-visible .letter__signature {
+  opacity: 1;
+  transform: none;
+}
+
+.letter__signature {
+  margin: 24px 0 0;
+  text-align: right;
+  font-family: var(--font-hand);
+  font-weight: 600;
+  font-size: 32px;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+/* Стрелка вниз */
+.scroll-arrow {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 1px solid rgba(196, 160, 90, .6);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--seal);
+  cursor: pointer;
+  touch-action: manipulation;
+  animation: arrow-bounce 2s ease-in-out infinite;
+}
+
+.scroll-arrow:focus-visible {
+  outline: 2px dashed var(--gold);
+  outline-offset: 4px;
+}
+
+@keyframes arrow-bounce {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(8px); }
+}
+
+/* =========================================================
+   ЭКРАН 3: ТАЙМЛАЙН
+   ========================================================= */
+.timeline {
+  padding: 96px 16px 120px;
+}
+
+.timeline__title {
+  margin: 0 0 72px;
+  text-align: center;
+  font-family: var(--font-title);
+  font-weight: 600;
+  font-size: clamp(34px, 9vw, 44px);
+  line-height: 1.1;
+  color: var(--ink);
+}
+
+.timeline__track {
+  position: relative;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+/* Золотая линия, «прорисовывается» по скроллу (scaleY задаёт JS) */
+.timeline__line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  margin-left: -.5px;
+  background: var(--gold);
+  transform: scaleY(0);
+  transform-origin: top center;
+  will-change: transform;
+}
+
+.timeline__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.timeline__item {
+  position: relative;
+  width: calc(50% - 56px);
+  opacity: 0;
+  transform: translateY(40px);
+  transition:
+    opacity .7s ease-out,
+    transform .7s ease-out;
+}
+
+.timeline__item.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Чётные (1, 3, 5…) — слева, нечётные — справа, с нахлёстом по вертикали */
+.timeline__item:nth-child(odd) {
+  align-self: flex-start;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.timeline__item:nth-child(even) {
+  align-self: flex-end;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.timeline__item + .timeline__item {
+  margin-top: -110px;
+}
+
+/* Точка на линии */
+.timeline__item::after {
+  content: "";
+  position: absolute;
+  top: 48px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--paper);
+  border: 1px solid var(--gold);
+}
+
+.timeline__item:nth-child(odd)::after {
+  right: -60.5px;
+}
+
+.timeline__item:nth-child(even)::after {
+  left: -60.5px;
+}
+
+/* Полароид */
+.polaroid {
+  position: relative;
+  width: 100%;
+  max-width: 340px;
+  margin: 0;
+  padding: 12px 12px 64px;   /* снизу — пустое поле полароида */
+  background: #fff;
+  box-shadow:
+    0 1px 2px rgba(46, 42, 38, .08),
+    0 12px 28px -10px rgba(46, 42, 38, .3);
+  transform: rotate(var(--tilt, 0deg));
+}
+
+/* Кусочек скотча */
+.polaroid::before {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  width: 60px;
+  height: 20px;
+  margin-left: -30px;
+  background: rgba(226, 212, 180, .7);
+  border-left: 1px dashed rgba(122, 111, 98, .18);
+  border-right: 1px dashed rgba(122, 111, 98, .18);
+  box-shadow: 0 1px 2px rgba(46, 42, 38, .1);
+  transform: rotate(var(--tape-tilt, -2deg));
+  z-index: 1;
+}
+
+.polaroid__photo {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  background: var(--paper-deep);
+  overflow: hidden;
+}
+
+.polaroid__photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Фото ещё не положили — показываем мягкий плейсхолдер */
+.polaroid__photo.is-missing img {
+  display: none;
+}
+
+.polaroid__photo.is-missing::after {
+  content: "здесь будет фото";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-hand);
+  font-weight: 600;
+  font-size: 22px;
+  color: rgba(122, 111, 98, .6);
+}
+
+/* Мобильная раскладка: одна колонка, линия слева */
+@media (max-width: 767px) {
+  .timeline {
+    padding-top: 72px;
+  }
+
+  .timeline__title {
+    margin-bottom: 56px;
+  }
+
+  .timeline__line {
+    left: 12px;
+  }
+
+  .timeline__item,
+  .timeline__item:nth-child(odd),
+  .timeline__item:nth-child(even) {
+    width: 100%;
+    align-self: stretch;
+    justify-content: center;
+    padding: 0 8px 0 40px;
+  }
+
+  .timeline__item + .timeline__item {
+    margin-top: 56px;
+  }
+
+  .timeline__item:nth-child(odd)::after,
+  .timeline__item:nth-child(even)::after {
+    left: 8px;
+    right: auto;
+  }
+}
+
+/* =========================================================
+   ЭКРАН 4: ФИНАЛ
+   ========================================================= */
+.finale {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 48px;
+  padding: 64px 16px;
+  text-align: center;
+}
+
+.finale__wish {
+  max-width: 720px;
+  margin: 0;
+  font-family: var(--font-title);
+  font-weight: 500;
+  font-size: clamp(30px, 8vw, 40px);
+  line-height: 1.25;
+  color: var(--ink);
+  overflow-wrap: break-word;
+}
+
+.finale__restart {
+  padding: 10px 28px;
+  border: 1px solid var(--seal);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--seal);
+  font-family: var(--font-hand);
+  font-weight: 600;
+  font-size: 24px;
+  line-height: 1.2;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background-color .25s ease, color .25s ease;
+}
+
+.finale__restart:hover,
+.finale__restart:focus-visible {
+  background: var(--seal);
+  color: var(--paper);
+  outline: none;
+}
+
+/* =========================================================
+   Конфетти
+   ========================================================= */
+.confetti {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  display: none;
+}
+
+.confetti.is-active {
+  display: block;
+}
+
+/* =========================================================
+   Мобильные отступы письма
+   ========================================================= */
+@media (max-width: 600px) {
+  .letter {
+    padding: 28px;
+  }
+
+  .letter__text p {
+    font-size: 17px;
+  }
+}
+
+/* =========================================================
+   Уменьшенное движение: только простой fade
+   ========================================================= */
+@media (prefers-reduced-motion: reduce) {
+  .envelope-float,
+  .envelope-hint,
+  .scroll-arrow {
+    animation: none;
+  }
+
+  .envelope-hint {
+    opacity: .8;
+  }
+
+  .letter__text p,
+  .letter__signature,
+  .timeline__item {
+    transform: none;
+    transition: opacity .5s ease;
+  }
+
+  .timeline__line {
+    transform: scaleY(1) !important;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
+}

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#F4EDE2">
+  <title>С днём рождения, брат!</title>
+  <meta name="description" content="Письмо и немного нашей истории — лично тебе.">
+  <!-- Сайт личный: просим поисковики не показывать его в выдаче -->
+  <meta name="robots" content="noindex, nofollow">
+
+  <!-- Open Graph: карточка ссылки в Telegram / VK / WhatsApp -->
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="ru_RU">
+  <meta property="og:title" content="С днём рождения, брат!">
+  <meta property="og:description" content="Тебе письмо. Открой конверт — внутри немного нашей истории.">
+  <!--
+    Картинка для превью. Telegram принимает только АБСОЛЮТНЫЙ адрес.
+    После публикации сайта положи фото в photos/og.jpg (1200×630)
+    и раскомментируй строку, подставив свой домен:
+    <meta property="og:image" content="https://ТВОЙ-ДОМЕН/photos/og.jpg">
+  -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="С днём рождения, брат!">
+  <meta name="twitter:description" content="Тебе письмо. Открой конверт — внутри немного нашей истории.">
+
+  <!-- Шрифты: Cormorant Garamond (заголовки), Onest (текст), Caveat (рукопись). Кириллица подключается через unicode-range. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Cormorant+Garamond:wght@500;600&family=Onest:wght@400;500&display=swap&subset=cyrillic">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="is-locked">
+
+  <!-- ЭКРАН 1: КОНВЕРТ -->
+  <section class="envelope-screen" id="envelope-screen">
+    <div class="envelope-float">
+      <button class="envelope" id="envelope" type="button" aria-label="Открыть конверт">
+        <span class="envelope__back"></span>
+        <span class="envelope__sheet"></span>
+        <span class="envelope__pocket"></span>
+        <span class="envelope__flap"></span>
+        <span class="envelope__seal" aria-hidden="true"></span>
+      </button>
+    </div>
+    <p class="envelope-hint">нажми, чтобы открыть</p>
+  </section>
+
+  <!-- Всё, что открывается после конверта -->
+  <main class="album" id="album" hidden>
+
+    <!-- ЭКРАН 2: ПИСЬМО -->
+    <section class="letter-screen" id="letter-screen">
+      <article class="letter" id="letter">
+        <div class="letter__text" id="letter-text"></div>
+        <p class="letter__signature" id="letter-signature"></p>
+      </article>
+
+      <button class="scroll-arrow" id="scroll-arrow" type="button" aria-label="Дальше — наша история">
+        <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true">
+          <path d="M5 9l7 7 7-7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </section>
+
+    <!-- ЭКРАН 3: ТАЙМЛАЙН -->
+    <section class="timeline" id="timeline">
+      <h2 class="timeline__title">Наша история</h2>
+      <div class="timeline__track">
+        <span class="timeline__line" id="timeline-line" aria-hidden="true"></span>
+        <ol class="timeline__list" id="timeline-list"></ol>
+      </div>
+    </section>
+
+    <!-- ЭКРАН 4: ФИНАЛ -->
+    <section class="finale" id="finale">
+      <p class="finale__wish" id="finale-wish"></p>
+      <button class="finale__restart" id="restart" type="button">в начало</button>
+    </section>
+  </main>
+
+  <!-- Холст для конфетти -->
+  <canvas class="confetti" id="confetti" aria-hidden="true"></canvas>
+
+  <script src="script.js"></script>
+</body>
+</html>

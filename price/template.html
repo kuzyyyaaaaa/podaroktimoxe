@@ -46,7 +46,7 @@ function draw(data) {
   document.getElementById('title').textContent = data.title;
   document.getElementById('cards').innerHTML = data.models.map(m => `
     <div class="card">
-      <div class="phone"><img src="phones/${m.phone}.png"></div>
+      ${m.phone ? `<div class="phone"><img src="phones/${m.phone}.png"></div>` : ""}
       <div class="name">${m.name}</div>
       ${m.rows.map(r => `
         <div class="row">

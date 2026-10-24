@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Прайс 3K STORE</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1080px; height: 1920px; background: #fff; }
+  body {
+    font-family: 'Inter Display', 'Inter', sans-serif;
+    color: #111;
+    display: flex; flex-direction: column; align-items: center;
+    -webkit-font-smoothing: antialiased;
+  }
+  .brand { margin-top: 70px; font-size: 42px; font-weight: 700; letter-spacing: -0.2px; }
+  .title { margin-top: 62px; font-size: 83px; font-weight: 700; letter-spacing: -2.4px; line-height: 1; }
+  .cards { margin-top: 62px; width: 968px; display: flex; flex-direction: column; gap: 18px; }
+  .card {
+    position: relative; overflow: hidden;
+    background: #f2f2f0; border-radius: 44px;
+    padding: 36px 48px 30px;
+  }
+  .name { font-size: 45px; font-weight: 700; letter-spacing: -0.9px; line-height: 52px; }
+  .row { display: flex; align-items: center; height: 52px; }
+  .mem { width: 150px; font-family: 'Inter', sans-serif; font-size: 30.5px; font-weight: 400; color: #8e8e93; letter-spacing: 0.2px; }
+  .price { font-size: 33px; font-weight: 700; letter-spacing: -0.6px; }
+  .arrow { width: 15px; height: 21px; margin-left: 12px; margin-top: 2px; }
+  .phone { position: absolute; right: 0; top: 6px; bottom: 6px; }
+  .phone img { height: 100%; display: block; }
+  .foot {
+    margin-top: 50px; text-align: center;
+    font-family: 'Inter', sans-serif; font-size: 30px; line-height: 46px; color: #9a9a9e;
+  }
+</style>
+</head>
+<body>
+  <div class="brand">3K STORE</div>
+  <div class="title" id="title"></div>
+  <div class="cards" id="cards"></div>
+  <div class="foot">*Стоимость зависит от цвета и конфигурации.<br>Для уточнения пишите в личные сообщения.</div>
+
+<script>
+function draw(data) {
+  const fmt = n => n.toLocaleString('ru-RU').replace(/\s/g, ' ');
+  const arrow = '<svg class="arrow" viewBox="0 0 15 21"><rect x="6" y="0" width="3" height="11" fill="#2da846"/><path d="M1 10.5h13L7.5 20.5z" fill="#2da846"/></svg>';
+  document.getElementById('title').textContent = data.title;
+  document.getElementById('cards').innerHTML = data.models.map(m => `
+    <div class="card">
+      <div class="phone"><img src="phones/${m.phone}.png"></div>
+      <div class="name">${m.name}</div>
+      ${m.rows.map(r => `
+        <div class="row">
+          <span class="mem">${r.mem}</span>
+          <span class="price">от ${fmt(r.price)} ₽</span>
+          ${r.prev && r.price < r.prev ? arrow : ''}
+        </div>`).join('')}
+    </div>`).join('');
+}
+</script>
+</body>
+</html>

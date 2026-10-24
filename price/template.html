@@ -27,6 +27,16 @@
   .arrow { width: 15px; height: 21px; margin-left: 12px; margin-top: 2px; }
   .phone { position: absolute; right: 0; top: 6px; bottom: 6px; }
   .phone img { height: 100%; display: block; }
+  /* Крупный вариант, когда карточек мало (size: 'large' в данных) */
+  .large .card { padding: 42px 48px 45px; }
+  .large .name { font-size: 56px; line-height: 64px; letter-spacing: -1.2px; }
+  .large .row { height: 70px; }
+  .large .mem { font-size: 40px; }
+  .large .price { font-size: 43px; letter-spacing: -0.8px; }
+  .large .arrow { width: 19px; height: 28px; margin-left: 14px; }
+  .large .brand { margin-top: 112px; }
+  .large .title { margin-top: 70px; }
+  .large .cards { gap: 28px; margin-top: 70px; }
   .foot {
     margin-top: 50px; text-align: center;
     font-family: 'Inter', sans-serif; font-size: 30px; line-height: 46px; color: #9a9a9e;
@@ -43,6 +53,7 @@
 function draw(data) {
   const fmt = n => n.toLocaleString('ru-RU').replace(/\s/g, ' ');
   const arrow = '<svg class="arrow" viewBox="0 0 15 21"><rect x="6" y="0" width="3" height="11" fill="#2da846"/><path d="M1 10.5h13L7.5 20.5z" fill="#2da846"/></svg>';
+  if (data.size) document.body.classList.add(data.size);
   document.getElementById('title').textContent = data.title;
   document.getElementById('cards').innerHTML = data.models.map(m => `
     <div class="card">

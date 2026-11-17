@@ -36,7 +36,9 @@
   .large .arrow { width: 19px; height: 28px; margin-left: 14px; }
   .large .brand { margin-top: 112px; }
   .large .title { margin-top: 70px; }
+  .foot .date { color: #111; font-weight: 600; font-size: 34px; }
   .large .cards { gap: 28px; margin-top: 70px; }
+  .hero { margin-top: 36px; width: 960px; display: block; }
   .foot {
     margin-top: 50px; text-align: center;
     font-family: 'Inter', sans-serif; font-size: 30px; line-height: 46px; color: #9a9a9e;
@@ -47,7 +49,8 @@
   <div class="brand">3K STORE</div>
   <div class="title" id="title"></div>
   <div class="cards" id="cards"></div>
-  <div class="foot">*Стоимость зависит от цвета и конфигурации.<br>Для уточнения пишите в личные сообщения.</div>
+  <img class="hero" id="hero" hidden>
+  <div class="foot"><span class="date" id="date"></span><br>*Стоимость зависит от цвета и конфигурации.<br>Для уточнения пишите в личные сообщения.</div>
 
 <script>
 function draw(data) {
@@ -55,6 +58,8 @@ function draw(data) {
   const arrow = '<svg class="arrow" viewBox="0 0 15 21"><rect x="6" y="0" width="3" height="11" fill="#2da846"/><path d="M1 10.5h13L7.5 20.5z" fill="#2da846"/></svg>';
   if (data.size) document.body.classList.add(data.size);
   document.getElementById('title').textContent = data.title;
+  document.getElementById('date').textContent = 'Цены на ' + data.date.slice(0, 5);
+  if (data.hero) Object.assign(document.getElementById('hero'), { src: `phones/${data.hero}.png`, hidden: false });
   document.getElementById('cards').innerHTML = data.models.map(m => `
     <div class="card">
       ${m.phone ? `<div class="phone"><img src="phones/${m.phone}.png"></div>` : ""}

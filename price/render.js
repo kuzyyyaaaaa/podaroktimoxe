@@ -9,7 +9,7 @@ const path = require('path');
   await page.goto('file://' + path.join(__dirname, 'template.html'));
   await page.addScriptTag({ path: path.join(__dirname, name + '.js') });
   await page.evaluate(() => draw(window.PRICE));
-  await page.evaluate(() => Promise.all([document.fonts.ready, ...[...document.images].map(i => i.decode())]));
+  await page.evaluate(() => Promise.all([document.fonts.ready, ...[...document.images].filter(i => i.getAttribute("src")).map(i => i.decode())]));
   await page.screenshot({ path: path.join(__dirname, 'out', name + '.png') });
   await browser.close();
   console.log('out/' + name + '.png');
